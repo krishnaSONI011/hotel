@@ -15,7 +15,7 @@ export async function apiRequest(path, method = "GET", body) {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-    const res = await fetch(`http://localhost:3001/api${path}`, {
+    const res = await fetch(`https://agent.yoginee.com/travel/api${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,

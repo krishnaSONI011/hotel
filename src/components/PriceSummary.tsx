@@ -17,28 +17,9 @@ export default function PriceSummary({
   selectedTransport,
   selectedRooms,
 }: Props) {
-  if (!bookingData || !detailsData) return null;
-
-  // --- number of journey days = sum of nights + 1 ---
-  const journeyDays =
-    (bookingData.destinations || []).reduce(
-      (s: number, d: any) => s + (Number(d.nights) || 0),
-      0
-    ) + 1;
-
-  // --- determine season (Oct - Dec) ---
-  const leavingOn = bookingData.leavingOn;
-  const leavingMonth =
-    leavingOn && !Number.isNaN(new Date(leavingOn).getTime())
-      ? new Date(leavingOn).getMonth() + 1
-      : null;
-  const isSeason =
-    leavingMonth ? leavingMonth >= 10 && leavingMonth <= 12 : false;
-
-  // --- Flatten selectedRooms into usable list ---
+  // --- Flatten selectedRooms into usable list (must run before any early return) ---
   const selectedRoomsFlat = useMemo(() => {
     const flat: any[] = [];
-
     if (!selectedRooms || !detailsData?.cities) return flat;
 
     for (const [cityName, selections] of Object.entries(selectedRooms)) {
@@ -70,6 +51,36 @@ export default function PriceSummary({
     return flat;
   }, [selectedRooms, detailsData]);
 
+  // --- Group by hotel for display (must run before any early return) ---
+  const groupedByHotel = useMemo(() => {
+    const map: Record<string, any[]> = {};
+    for (const r of selectedRoomsFlat) {
+      const key = r.hotel_name || `${r.hotel_id || "hotel"}`;
+      if (!map[key]) map[key] = [];
+      map[key].push(r);
+    }
+    return map;
+  }, [selectedRoomsFlat]);
+
+  // --- Early return after all hooks ---
+  if (!bookingData || !detailsData) return null;
+
+  // --- number of journey days = sum of nights + 1 ---
+  const journeyDays =
+    (bookingData.destinations || []).reduce(
+      (s: number, d: any) => s + (Number(d.nights) || 0),
+      0
+    ) + 1;
+
+  // --- determine season (Oct - Dec) ---
+  const leavingOn = bookingData.leavingOn;
+  const leavingMonth =
+    leavingOn && !Number.isNaN(new Date(leavingOn).getTime())
+      ? new Date(leavingOn).getMonth() + 1
+      : null;
+  const isSeason =
+    leavingMonth ? leavingMonth >= 10 && leavingMonth <= 12 : false;
+
   // --- Calculate total travellers ---
   const totalTravellers =
     (Number(bookingData?.adults) || 0) +
@@ -78,15 +89,10 @@ export default function PriceSummary({
     ).length || 0);
 
   // --- Calculate number of vehicles needed ---
-  
-const seatingCapacity = Number(selectedTransport?.seating_capacity) || 1;
-const vehiclesNeeded =
-  Number(selectedTransport?.vehiclesNeeded) ||
-  (totalTravellers > 0
-    ? Math.ceil(
-        totalTravellers / (Number(selectedTransport?.seating_capacity) || 1)
-      )
-    : 1);
+  const seatingCapacity = Number(selectedTransport?.seating_capacity) || 1;
+  const vehiclesNeeded =
+    Number(selectedTransport?.vehiclesNeeded) ||
+    (totalTravellers > 0 ? Math.ceil(totalTravellers / seatingCapacity) : 1);
 
   // --- Transport cost (scales by vehiclesNeeded) ---
   const transportCost =
@@ -113,17 +119,6 @@ const vehiclesNeeded =
   }, 0);
 
   const finalTotal = transportCost + hotelCost;
-
-  // --- Group by hotel for display ---
-  const groupedByHotel = useMemo(() => {
-    const map: Record<string, any[]> = {};
-    for (const r of selectedRoomsFlat) {
-      const key = r.hotel_name || `${r.hotel_id || "hotel"}`;
-      if (!map[key]) map[key] = [];
-      map[key].push(r);
-    }
-    return map;
-  }, [selectedRoomsFlat]);
 
   // --- Confirm handler ---
   const handleConfirm = () => {

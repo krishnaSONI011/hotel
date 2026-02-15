@@ -55,6 +55,14 @@ export default function BookingDetailsPage() {
     [cityId: number]: RoomSelection[];
   }>({});
 
+  const [selectedSightseeing, setSelectedSightseeing] = useState<any[]>([]);
+  const onToggleSightseeing = (sight: any, checked: boolean) => {
+    setSelectedSightseeing((prev) => {
+      if (checked) return [...prev, sight];
+      return prev.filter((x) => !(x.id === sight.id && x.cityId === sight.cityId));
+    });
+  };
+
   /* ================= LOAD + NORMALIZE DATA ================= */
 
   useEffect(() => {
@@ -337,6 +345,8 @@ const handleToggleRoom = (
           handleHotelChange(dest.city_id, hotel)
         }
         travelDate={bookingData.leavingOn}
+        selectedSightseeing={selectedSightseeing}
+        onToggleSightseeing={onToggleSightseeing}
       />
     );
   })}

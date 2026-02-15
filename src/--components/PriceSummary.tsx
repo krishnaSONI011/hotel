@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 
-// type SelectedRoomsMap = {
-//   [cityId: number]: { roomId: number; extraBed: boolean }[];
-// };
+type SelectedRoomsMap = {
+  [cityId: number]: { roomId: number; extraBed: boolean }[];
+};
 type SelectedRoom = {
   roomId: number;
   extraBed: boolean;

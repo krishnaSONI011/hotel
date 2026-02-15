@@ -1,0 +1,31 @@
+{
+  "name": "agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "build:css": "tailwindcss -i ./public/agent-styles.css -o ./public/output.css"
+  },
+  "dependencies": {
+    "next": "^15.5.9",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.7",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.17",
+    "eslint": "^9",
+    "eslint-config-next": "15.5.0",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "5.9.2"
+  }
+}

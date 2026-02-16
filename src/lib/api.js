@@ -1,7 +1,7 @@
 export async function apiRequest(path, method = "GET", body) {
   try {
     console.log("🚀 API Request Called:");
-    console.log("➡️ URL:", `https://agent.yoginee.com/travel/api${path}`);
+    console.log("➡️ URL:", `https://orchid-manatee-360811.hostingersite.com/api${path}`);
     console.log("➡️ Method:", method);
     console.log("➡️ Body:", body);
     const token = localStorage.getItem("token");
@@ -15,7 +15,7 @@ export async function apiRequest(path, method = "GET", body) {
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-    const res = await fetch(`https://agent.yoginee.com/travel/api${path}`, {
+    const res = await fetch(`https://orchid-manatee-360811.hostingersite.com/api${path}`, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,

@@ -282,6 +282,7 @@ const handleHotelChange = (cityName: string, newHotel: any) => {
           detailsData={detailsData}
           selectedTransport={selectedTransport}
           selectedRooms={selectedRooms}
+          selectedSightseeing={selectedSightseeing}
         />
       </div>
     </div>

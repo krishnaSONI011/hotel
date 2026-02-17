@@ -12,6 +12,7 @@ type SightseeingSelection = {
   name: string;
   details?: string;
   price?: number;
+  cityName?: string;
 };
 
 type Room = {
@@ -107,12 +108,19 @@ export default function CitySection({
       setLoadingSight(true);
       setSightList([]);
 
-      // 🔥 API CALL (change url if needed)
-      const url = `/sightseeing?cityId=${cityId}`;
+      // 🔥 Call live sightseeing API (proxied via NEXT_PUBLIC_API_URL)
+      // Backend endpoint: /api/site-seeing?cityId=...
+      const url = `/site-seeing?cityId=${cityId}`;
       const data = await apiRequest(url, "GET");
 
-      // expected: data.sightseeing = []
-      setSightList(Array.isArray(data?.sightseeing) ? data.sightseeing : []);
+      // Live API shape: { success, total, data: [...] }
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data?.sightseeing)
+        ? data.sightseeing
+        : [];
+
+      setSightList(list);
     } catch (err) {
       console.error("Error fetching sightseeing:", err);
     } finally {
@@ -461,12 +469,25 @@ export default function CitySection({
               {sightList.map((sight) => {
                 const sightId = sight?.id ?? sight?.sight_id;
                 const name = sight?.name ?? sight?.title ?? "Sightseeing";
-                const details = sight?.details ?? sight?.description ?? "";
+                const details =
+                  sight?.sightseeing_details ??
+                  sight?.details ??
+                  sight?.description ??
+                  "";
                 const price = Number(sight?.price ?? sight?.rate ?? 0);
 
                 const checked = selectedSightseeing.some(
                   (x) => x.id === sightId && x.cityId === cityId
                 );
+
+                const payload: SightseeingSelection = {
+                  id: sightId,
+                  cityId,
+                  name,
+                  details,
+                  price,
+                  cityName: city?.name,
+                };
 
                 return (
                   <div key={sightId} className="border p-3 rounded shadow hover:shadow-md">
@@ -474,27 +495,22 @@ export default function CitySection({
                       <div className="flex-1">
                         <p className="font-bold">{name}</p>
                         {details && <p className="text-sm text-gray-600">{details}</p>}
-                        <p className="text-sm font-medium mt-1">₹{price}</p>
+                        {price > 0 && (
+                          <p className="text-sm font-medium mt-1">₹{price}</p>
+                        )}
                       </div>
 
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(e) => {
-                            const payload: SightseeingSelection = {
-                              id: sightId,
-                              cityId: cityId,
-                              name,
-                              details,
-                              price,
-                            };
-
-                            onToggleSightseeing(payload, e.target.checked);
-                          }}
-                        />
-                        <span className="text-sm">Select</span>
-                      </label>
+                      <button
+                        type="button"
+                        onClick={() => onToggleSightseeing(payload, !checked)}
+                        className={`px-3 py-1 text-sm rounded ${
+                          checked
+                            ? "bg-red-600 text-white hover:bg-red-700"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        {checked ? "Remove" : "Add"}
+                      </button>
                     </div>
                   </div>
                 );

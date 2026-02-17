@@ -4,11 +4,21 @@ type SelectedRoomsMap = {
   [cityName: string]: { roomId: number; extraBed: boolean }[];
 };
 
+type SelectedSightseeing = {
+  id: number;
+  cityId: number;
+  name: string;
+  details?: string;
+  price?: number;
+  cityName?: string;
+};
+
 type Props = {
   bookingData: any;
   detailsData: any;
   selectedTransport: any | null;
   selectedRooms: SelectedRoomsMap;
+  selectedSightseeing?: SelectedSightseeing[];
 };
 
 export default function PriceSummary({
@@ -16,6 +26,7 @@ export default function PriceSummary({
   detailsData,
   selectedTransport,
   selectedRooms,
+  selectedSightseeing = [],
 }: Props) {
   // --- Flatten selectedRooms into usable list (must run before any early return) ---
   const selectedRoomsFlat = useMemo(() => {
@@ -118,7 +129,13 @@ export default function PriceSummary({
     return sum + roomTotal;
   }, 0);
 
-  const finalTotal = transportCost + hotelCost;
+  // --- Sightseeing cost (optional, if price is provided) ---
+  const sightseeingTotal = (selectedSightseeing || []).reduce(
+    (sum, s) => sum + (Number(s.price) || 0),
+    0
+  );
+
+  const finalTotal = transportCost + hotelCost + sightseeingTotal;
 
   // --- Confirm handler ---
   const handleConfirm = () => {
@@ -251,6 +268,40 @@ export default function PriceSummary({
         )}
       </div>
 
+      {/* Sightseeing summary */}
+      <div className="mb-3">
+        <h3 className="text-lg font-semibold mb-2">Sightseeing</h3>
+        {selectedSightseeing.length === 0 ? (
+          <p className="text-sm text-gray-500">No sightseeing selected</p>
+        ) : (
+          <div className="space-y-2 text-sm">
+            {selectedSightseeing.map((s) => (
+              <div
+                key={`${s.cityId}-${s.id}`}
+                className="flex justify-between items-start border rounded p-2 bg-gray-50"
+              >
+                <div>
+                  <div className="font-medium">
+                    {s.name}
+                    {s.cityName && (
+                      <span className="text-xs text-gray-500"> — {s.cityName}</span>
+                    )}
+                  </div>
+                  {s.details && (
+                    <div className="text-xs text-gray-600 line-clamp-2">
+                      {s.details}
+                    </div>
+                  )}
+                </div>
+                <div className="font-semibold">
+                  ₹{Number(s.price || 0)}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <hr className="my-2" />
 
       {/* Totals */}
@@ -261,6 +312,10 @@ export default function PriceSummary({
       <div className="flex justify-between mt-1">
         <div className="font-medium">Transport</div>
         <div className="font-medium">₹{transportCost}</div>
+      </div>
+      <div className="flex justify-between mt-1">
+        <div className="font-medium">Sightseeing</div>
+        <div className="font-medium">₹{sightseeingTotal}</div>
       </div>
 
       <div className="mt-3 text-lg font-semibold flex justify-between">

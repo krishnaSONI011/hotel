@@ -1,21 +1,27 @@
 export async function apiRequest(path, method = "GET", body) {
   try {
+    const baseURL =
+      process.env.NEXT_PUBLIC_API_URL ||
+      "https://agent.yoginee.com/travel/api";
+    const url = `${baseURL}${path}`;
+
     console.log("🚀 API Request Called:");
-    console.log("➡️ URL:", `https://orchid-manatee-360811.hostingersite.com/api${path}`);
+    console.log("➡️ URL:", url);
     console.log("➡️ Method:", method);
     console.log("➡️ Body:", body);
+
     const token = localStorage.getItem("token");
     console.log("➡️ token:", token);
     const headers = {
       "Content-Type": "application/json",
     };
 
-
     // Add Authorization header only if token exists
     if (token) {
       headers["Authorization"] = `Bearer ${token}`;
     }
-    const res = await fetch(`https://orchid-manatee-360811.hostingersite.com/api${path}`, {
+
+    const res = await fetch(url, {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,

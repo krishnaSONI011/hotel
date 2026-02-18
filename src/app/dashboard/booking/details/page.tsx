@@ -72,6 +72,7 @@ export default function BookingDetailsPage() {
 
     const fetchBookingDetails = async () => {
       try {
+        
         const response = await apiRequest("/booking", "POST", parsed);
         console.log("Booking API response:", response);
 
@@ -255,23 +256,39 @@ const handleHotelChange = (cityName: string, newHotel: any) => {
         />
 
         {/* Hotels / Cities */}
-      {bookingData.addTransfers &&
-  detailsData.cities.map((city, index) => (
-    
-    <CitySection
-      key={index}
-      city={city}
-      cityId={city.hotel?.[0]?.city_id ?? index}  // ✅ ensure proper city_id
-      selectedRooms={selectedRooms[city.name] || []}
-      onToggleRoom={(room, options, checked) =>
-        handleToggleRoom(city.name, room, options, checked)
-      }
-      onHotelChange={(_, newHotel) => handleHotelChange(city.name, newHotel)}
-      travelDate={bookingData.leavingOn}
-      selectedSightseeing={selectedSightseeing}
-      onToggleSightseeing={onToggleSightseeing}
-    />
-  ))}
+        {bookingData.addTransfers &&
+          detailsData.cities.map((city, index) => {
+            // Try to find matching destination to get the real cityId (DB id)
+            const matchDest = bookingData.destinations.find(
+              (d) =>
+                d.city &&
+                (city?.name || city?.city) &&
+                d.city.toLowerCase() === String(city.name || city.city).toLowerCase()
+            );
+
+            const cityIdForApis =
+              matchDest?.id ??
+              city.hotel?.[0]?.city_id ??
+              index;
+
+            return (
+              <CitySection
+                key={`${cityIdForApis}-${index}`}
+                city={city}
+                cityId={cityIdForApis}
+                selectedRooms={selectedRooms[city.name] || []}
+                onToggleRoom={(room, options, checked) =>
+                  handleToggleRoom(city.name, room, options, checked)
+                }
+                onHotelChange={(_, newHotel) =>
+                  handleHotelChange(city.name, newHotel)
+                }
+                travelDate={bookingData.leavingOn}
+                selectedSightseeing={selectedSightseeing}
+                onToggleSightseeing={onToggleSightseeing}
+              />
+            );
+          })}
       
       </div>
 
